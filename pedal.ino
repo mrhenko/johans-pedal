@@ -4,13 +4,19 @@ int digitalButtons[3] = { 2, 3, 4 };
 int analogButtons[3] = { 3, 4, 5 };
 boolean digitalButtonsIsDepressed[3] = { false, false, false };
 
+byte controlChangeNumber[6] = { 25, 26, 27, 28, 29, 30 };
+byte midiMessageForControlChange = 176;
+byte midiChannel = 9;
+byte controlChange = 0; 
+
 int buttonValue = 0;
 
-byte midiChannel = 1001; // Channel 9
-
 void setup() {
-  //Serial.begin( 31250 ); // MIDI Baud Rate
-  Serial.begin( 9600 );
+  Serial.begin( 31250 ); // MIDI Baud Rate
+  //Serial.begin( 9600 );
+  
+  controlChange = midiMessageForControlChange + midiChannel - 1;
+  Serial.println( controlChange );
   
   for ( int i = 0; i < 3; i++ ) {
     pinMode( digitalButtons[ i ], INPUT );
@@ -48,15 +54,21 @@ void checkButtons() {
     if ( digitalRead( digitalButtons[ i ] ) == HIGH ) {
       if ( digitalButtonsIsDepressed[ i ] == false ) { // If the button isn't already registrered as pressed
         digitalButtonsIsDepressed[ i ] = true;
-        Serial.print( i );
-        Serial.println( " is currently being pressed.");
+        
+        sendMidi( i, true );
+        
+        /*Serial.print( i );
+        Serial.println( " is currently being pressed.");*/
       }
     } else {
       
       if ( digitalButtonsIsDepressed[ i ] ) { // The button was just released
         digitalButtonsIsDepressed[ i ] = false;
-        Serial.print( i );
-        Serial.println( " was just released.");
+        
+        sendMidi( i, false );
+        
+        /*Serial.print( i );
+        Serial.println( " was just released.");*/
       }
     }
     
@@ -67,4 +79,17 @@ void checkButtons() {
      // Serial.println( buttonValue);
     }
   }
+}
+
+void sendMidi( int buttonNumber, boolean isOn ) {
+  
+  Serial.write( controlChange );
+  Serial.write( controlChangeNumber[ buttonNumber ] );
+  
+  if ( isOn ) {
+    Serial.write( 127 );
+  } else {
+    Serial.write( 0 );
+  }
+  
 }
