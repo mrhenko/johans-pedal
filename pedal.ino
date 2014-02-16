@@ -1,10 +1,10 @@
 int incomingMidiMessage;
 
-int digitalButtons[3] = { 2, 3, 4 };
+int digitalButtons[4] = { 2, 3, 4, 5 };
 int analogButtons[3] = { 3, 4, 5 };
-boolean digitalButtonsIsDepressed[3] = { false, false, false };
+boolean digitalButtonsIsDepressed[3] = { false, false, false, false };
 
-byte controlChangeNumber[6] = { 25, 26, 27, 28, 29, 30 };
+byte controlChangeNumber[6] = { 25, 26, 27, 64, 28, 29, 30 };
 byte midiMessageForControlChange = 176;
 byte midiChannel = 9;
 byte controlChange = 0; 
