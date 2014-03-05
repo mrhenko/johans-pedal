@@ -1,14 +1,15 @@
 int digitalButtons[3] = { 2, 3, 4 };
-int analogButtons[3] = { 3, 4, 5 };
+//char analogButtons[3] = { "A7", "A6", "A5" };
 boolean digitalButtonsIsDepressed[3] = { false, false, false };
+boolean analogButtonsIsDepressed[3] = { false, false, false };
+boolean sustainPedalIsDepressed = false;
 
 byte controlChangeNumber[6] = { 25, 26, 27, 28, 29, 30 };
 byte midiMessageForControlChange = 176;
 byte midiChannel = 9;
 byte controlChange = 0;
 
-boolean isControlChange = false;
-byte midiParameters[2] = { -1, -1 };
+byte commandByte = 0;
 
 int buttonValue = 0;
 
@@ -26,19 +27,21 @@ void setup() {
     pinMode( digitalButtons[ i ], INPUT );
   }
   
-  pinMode( led1, OUTPUT );
+  pinMode( A7, INPUT );
+  pinMode( A6, INPUT );
+  pinMode( A5, INPUT );
+  
+  /*pinMode( led1, OUTPUT );
   digitalWrite( led1, LOW );
   pinMode( led2, OUTPUT );
-  digitalWrite( led2, LOW );  
-  pinMode( 8, OUTPUT );
-  digitalWrite( 8, LOW ); 
+  digitalWrite( led2, LOW );  */
 }
 
 void loop() {
   
   checkButtons();
   
-  checkMidiForCC();
+  //checkMidi();
   
 }
 
@@ -77,12 +80,21 @@ void checkButtons() {
     }
     
     // Analog
-    buttonValue = analogRead( analogButtons[ i ] );
+    /*buttonValue = analogRead( analogButtons[ i ] );
     if ( buttonValue > 1000 ) {
      // Serial.println( analogButtons[ i ] );
      // Serial.println( buttonValue);
-    }
+    }*/
   }
+  
+  // Analog
+  /*buttonValue = analogRead( A7 );
+  if ( buttonValue > 1000 ) {
+     // Serial.println( analogButtons[ i ] );
+     // Serial.println( buttonValue);
+     analogButtonsIsDepress[ 0 ] = true;
+     sendMidi
+  }*/
 }
 
 void sendMidi( int buttonNumber, boolean isOn ) {
@@ -98,38 +110,43 @@ void sendMidi( int buttonNumber, boolean isOn ) {
   
 }
 
-int checkMidiForCC() {
+/*void checkMidi() {
+  // Check if we have any serial data.
   if ( Serial.available() ) {
-    
-    // Read the first serial message
-    int newMessage = Serial.read();
-    
-    // Check if it's any of out CCs
-    if ( isControlChange ) {
-      if ( midiParameters[0] == -1) {
-        midiParameters[0] = newMessage;
-      } else {
-        midiParameters[1] = newMessage;
-        int tempLed = matchMidiCCToLed();
-        if ( tempLed > 0 ) {
-          changeIndicatorLed( tempLed );
-        }
-          isControlChange = false;
-          midiParameters[0] = -1;
-          midiParameters[1] = -1;
-      }
-    } else if ( newMessage == controlChange ) {
-      isControlChange = true;
-      return 0;
-    } else {
-      return 0;
+    if ( commandByte == 0 ) {
+      // Read first byte (command).
+      commandByte = Serial.read();
     }
-    
   }
-}
 
-int matchMidiCCToLed() {
-  switch ( midiParameters[0] ) {
+  if ( Serial.available() ) {
+    // Just listen for note on and off.
+    if ( commandByte == controlChange ) {
+      byte values[ 2 ];
+      getBytes( 2, values );        
+      
+      changeIndicatorLed( getLed( values[ 0 ] ), values[ 1 ] );
+      commandByte = 0;
+      
+    }
+  }
+}*§/
+
+/*void getBytes( int expectedBytes, byte savedBytes[] ) {
+  int receivedBytes = 0;
+
+  do {
+    if ( Serial.available() ) {
+      savedBytes[ receivedBytes ] = Serial.read();
+      receivedBytes++;
+    }
+  } 
+  while( receivedBytes < expectedBytes );
+}*/
+
+
+/*int getLed( byte val ) {
+  switch ( val ) {
     case 25:
       return led1;
       break;
@@ -137,15 +154,16 @@ int matchMidiCCToLed() {
       return led2;
       break;
     default:
-      //return 8;
       return 0;
   }
-}
+}*/
 
-void changeIndicatorLed( int led ) {
-  if ( midiParameters[1] == 0 ) {
-    digitalWrite( led, LOW );
-  } else if ( midiParameters[1] == 127 ) {
-    digitalWrite( led, HIGH );
+void changeIndicatorLed( int led, byte val ) {
+  if ( led ) {
+    if ( val == 0 ) { // For some reason I never end up here.
+      digitalWrite( led, LOW );
+    } else if ( val == 127 ) {
+      digitalWrite( led, HIGH );
+    }
   }
 }
