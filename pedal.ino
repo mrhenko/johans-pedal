@@ -1,20 +1,15 @@
-int digitalButtons[3] = { 2, 3, 4 };
+int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
 //char analogButtons[3] = { "A7", "A6", "A5" };
-boolean digitalButtonsIsDepressed[3] = { false, false, false };
-boolean analogButtonsIsDepressed[3] = { false, false, false };
+boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
+//boolean analogButtonsIsDepressed[3] = { false, false, false };
 boolean sustainPedalIsDepressed = false;
 
-byte controlChangeNumber[6] = { 25, 26, 27, 28, 29, 30 };
+byte controlChangeNumber[7] = { 25, 26, 27, 28, 29, 30, 64 };
 byte midiMessageForControlChange = 176;
 byte midiChannel = 9;
 byte controlChange = 0;
 
 byte commandByte = 0;
-
-int buttonValue = 0;
-
-int led1 = 6;
-int led2 = 7;
 
 void setup() {
   Serial.begin( 31250 ); // MIDI Baud Rate
@@ -23,14 +18,14 @@ void setup() {
   controlChange = midiMessageForControlChange + midiChannel - 1;
   //Serial.println( controlChange );
   
-  for ( int i = 0; i < 3; i++ ) {
+  for ( int i = 0; i < 7; i++ ) {
     pinMode( digitalButtons[ i ], INPUT );
   }
   
-  pinMode( A7, INPUT );
+/*  pinMode( A7, INPUT );
   pinMode( A6, INPUT );
   pinMode( A5, INPUT );
-  
+  */
   /*pinMode( led1, OUTPUT );
   digitalWrite( led1, LOW );
   pinMode( led2, OUTPUT );
@@ -55,7 +50,7 @@ void loop() {
  * being pressed will get a false.
  **/
 void checkButtons() {
-  for ( int i = 0; i < 3; i++ ) {
+  for ( int i = 0; i < 7; i++ ) {
     
     // Digital
     if ( digitalRead( digitalButtons[ i ] ) == HIGH ) {
@@ -72,7 +67,9 @@ void checkButtons() {
       if ( digitalButtonsIsDepressed[ i ] ) { // The button was just released
         digitalButtonsIsDepressed[ i ] = false;
         
-        //sendMidi( i, false );
+        if ( i == 6 ) {
+          sendMidi( i, false );
+        }
         
         /*Serial.print( i );
         Serial.println( " was just released.");*/
@@ -157,7 +154,7 @@ void sendMidi( int buttonNumber, boolean isOn ) {
       return 0;
   }
 }*/
-
+/*
 void changeIndicatorLed( int led, byte val ) {
   if ( led ) {
     if ( val == 0 ) { // For some reason I never end up here.
@@ -166,4 +163,4 @@ void changeIndicatorLed( int led, byte val ) {
       digitalWrite( led, HIGH );
     }
   }
-}
+}*/
