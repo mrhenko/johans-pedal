@@ -1,3 +1,21 @@
+/**
+ *  Code for LCD Debugger
+ **/
+#include <Wire.h>
+#include <LCD.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+
+byte index = 0;
+char buffer[16]; // the buffer;
+char inByte;
+bool strComplete = false;
+
+/**
+ *  End of code for LCD Debugger
+ **/
+
+
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
 //char analogButtons[3] = { "A7", "A6", "A5" };
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
@@ -30,6 +48,21 @@ void setup() {
   digitalWrite( led1, LOW );
   pinMode( led2, OUTPUT );
   digitalWrite( led2, LOW );  */
+
+  /**
+   *  Code for LCD Debugger
+   **/
+  lcd.begin( 16, 2 );
+  lcd.backlight();
+  lcd.clear();
+  lcd.setCursor( 0, 0 );
+  lcd.print( "Startar..." );
+  lcd.blink();
+  /**
+   *  End of code for LCD Debugger
+   **/
+
+
 }
 
 void loop() {
@@ -59,6 +92,8 @@ void checkButtons() {
         
         sendMidi( i, true );
         
+        lcd.clear();
+        lcd.print( i );
         /*Serial.print( i );
         Serial.println( " is currently being pressed.");*/
       }
@@ -71,6 +106,7 @@ void checkButtons() {
           sendMidi( i, false );
         }
         
+        lcd.clear();
         /*Serial.print( i );
         Serial.println( " was just released.");*/
       }
