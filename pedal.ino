@@ -17,9 +17,7 @@ bool strComplete = false;
 
 
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
-//char analogButtons[3] = { "A7", "A6", "A5" };
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
-//boolean analogButtonsIsDepressed[3] = { false, false, false };
 boolean sustainPedalIsDepressed = false;
 
 byte controlChangeNumber[7] = { 25, 26, 27, 28, 29, 30, 64 };
@@ -34,20 +32,10 @@ void setup() {
   //Serial.begin( 9600 );
   
   controlChange = midiMessageForControlChange + midiChannel - 1;
-  //Serial.println( controlChange );
   
   for ( int i = 0; i < 7; i++ ) {
     pinMode( digitalButtons[ i ], INPUT );
   }
-  
-/*  pinMode( A7, INPUT );
-  pinMode( A6, INPUT );
-  pinMode( A5, INPUT );
-  */
-  /*pinMode( led1, OUTPUT );
-  digitalWrite( led1, LOW );
-  pinMode( led2, OUTPUT );
-  digitalWrite( led2, LOW );  */
 
   /**
    *  Code for LCD Debugger
@@ -61,7 +49,6 @@ void setup() {
   /**
    *  End of code for LCD Debugger
    **/
-
 
 }
 
@@ -112,23 +99,7 @@ void checkButtons() {
         Serial.println( " was just released.");*/
       }
     }
-    
-    // Analog
-    /*buttonValue = analogRead( analogButtons[ i ] );
-    if ( buttonValue > 1000 ) {
-     // Serial.println( analogButtons[ i ] );
-     // Serial.println( buttonValue);
-    }*/
   }
-  
-  // Analog
-  /*buttonValue = analogRead( A7 );
-  if ( buttonValue > 1000 ) {
-     // Serial.println( analogButtons[ i ] );
-     // Serial.println( buttonValue);
-     analogButtonsIsDepress[ 0 ] = true;
-     sendMidi
-  }*/
 }
 
 void sendMidi( int buttonNumber, boolean isOn ) {
