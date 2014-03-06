@@ -1,7 +1,7 @@
 /**
  *  Code for LCD Debugger
  **/
-#include <Wire.h>
+/*#include <Wire.h>
 #include <LCD.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
@@ -52,7 +52,7 @@ void setup() {
   /**
    *  Code for LCD Debugger
    **/
-  lcd.begin( 16, 2 );
+ /* lcd.begin( 16, 2 );
   lcd.backlight();
   lcd.clear();
   lcd.setCursor( 0, 0 );
@@ -91,8 +91,9 @@ void checkButtons() {
         digitalButtonsIsDepressed[ i ] = true;
         
         sendMidi( i, true );
+        // sendMidi( i, false );
         
-        lcd.clear();
+       /* lcd.clear();
         lcd.print( i );
         /*Serial.print( i );
         Serial.println( " is currently being pressed.");*/
@@ -106,7 +107,7 @@ void checkButtons() {
           sendMidi( i, false );
         }
         
-        lcd.clear();
+      /*  lcd.clear();
         /*Serial.print( i );
         Serial.println( " was just released.");*/
       }
