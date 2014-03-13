@@ -27,9 +27,12 @@ byte controlChange = 0;
 
 byte commandByte = 0;
 
+unsigned long lastAction = 0;
+int holdFor = 150; // ms from one command to the next
+
 void setup() {
-  Serial.begin( 31250 ); // MIDI Baud Rate
-  //Serial.begin( 9600 );
+  //Serial.begin( 31250 ); // MIDI Baud Rate
+  Serial.begin( 9600 );
   
   controlChange = midiMessageForControlChange + midiChannel - 1;
   
@@ -54,6 +57,10 @@ void setup() {
 
 void loop() {
   
+  if ( ( millis() - holdFor ) > lastAction ) { // If lastAction hasn't changed for 200 ms
+    lastAction = 0; // Reset it
+  }
+  
   checkButtons();
   
   //checkMidi();
@@ -75,28 +82,45 @@ void checkButtons() {
     // Digital
     if ( digitalRead( digitalButtons[ i ] ) == HIGH ) {
       if ( digitalButtonsIsDepressed[ i ] == false ) { // If the button isn't already registrered as pressed
-        digitalButtonsIsDepressed[ i ] = true;
+
+        if ( lastAction == 0 ) { // This means nothing has happened for a while, so go ahead
         
-        sendMidi( i, true );
-        // sendMidi( i, false );
+          lastAction = millis();
         
-       /* lcd.clear();
-        lcd.print( i );
-        /*Serial.print( i );
-        Serial.println( " is currently being pressed.");*/
+          digitalButtonsIsDepressed[ i ] = true;
+        
+          // sendMidi( i, true );
+          // sendMidi( i, false );
+        
+         /* lcd.clear();
+          lcd.print( i );*/
+          Serial.print( i );
+          Serial.println( " is currently being pressed.");
+        }
+
+
+
+
+
       }
     } else {
       
       if ( digitalButtonsIsDepressed[ i ] ) { // The button was just released
-        digitalButtonsIsDepressed[ i ] = false;
+      
+        if ( lastAction == 0 ) { // This means nothing has happened for a while, so go ahead
         
-        if ( i == 6 ) {
-          sendMidi( i, false );
+          lastAction = millis();
+      
+          digitalButtonsIsDepressed[ i ] = false;
+        
+          if ( i == 6 ) {
+            //  sendMidi( i, false );
+          }
+        
+          /*  lcd.clear(); */
+          Serial.print( i );
+          Serial.println( " was just released.");
         }
-        
-      /*  lcd.clear();
-        /*Serial.print( i );
-        Serial.println( " was just released.");*/
       }
     }
   }
