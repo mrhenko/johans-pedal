@@ -15,6 +15,7 @@ bool strComplete = false;
  *  End of code for LCD Debugger
  **/
 
+boolean debugMode = true;
 
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
@@ -31,8 +32,12 @@ unsigned long lastAction = 0;
 int holdFor = 150; // ms from one command to the next
 
 void setup() {
-  //Serial.begin( 31250 ); // MIDI Baud Rate
-  Serial.begin( 9600 );
+  
+  if ( debugMode ) {
+    Serial.begin( 9600 );
+  } else {
+    Serial.begin( 31250 );
+  }
   
   controlChange = midiMessageForControlChange + midiChannel - 1;
   
@@ -89,13 +94,15 @@ void checkButtons() {
         
           digitalButtonsIsDepressed[ i ] = true;
         
-          // sendMidi( i, true );
-          // sendMidi( i, false );
-        
          /* lcd.clear();
           lcd.print( i );*/
-          Serial.print( i );
-          Serial.println( " is currently being pressed.");
+          
+          if ( debugMode ) {
+            Serial.print( i );
+            Serial.println( " is currently being pressed.");
+          } else {
+            sendMidi( i, true );
+          }
         }
 
 
@@ -113,13 +120,15 @@ void checkButtons() {
       
           digitalButtonsIsDepressed[ i ] = false;
         
-          if ( i == 6 ) {
-            //  sendMidi( i, false );
-          }
-        
           /*  lcd.clear(); */
-          Serial.print( i );
-          Serial.println( " was just released.");
+          
+          if ( debugMode ) {
+            Serial.print( i );
+            Serial.println( " was just released.");
+          } else {
+            sendMidi( i, false );
+          }
+          
         }
       }
     }
