@@ -15,8 +15,9 @@ bool strComplete = false;
  *  End of code for LCD Debugger
  **/
 
-boolean debugMode = true;
+boolean debugMode = false;
 
+int ledOutputs[6] = { 6, 7, 8, 9, 10, 11 };
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
 boolean sustainPedalIsDepressed = false;
@@ -27,6 +28,7 @@ byte midiChannel = 9;
 byte controlChange = 0;
 
 byte commandByte = 0;
+byte midiParameters[2] = { -1, -1 };
 
 unsigned long lastAction = 0;
 int holdFor = 150; // ms from one command to the next
@@ -43,6 +45,11 @@ void setup() {
   
   for ( int i = 0; i < 7; i++ ) {
     pinMode( digitalButtons[ i ], INPUT );
+  }
+  
+  for ( int i = 0; i < 7; i++ ) {
+    pinMode( ledOutputs[ i ], OUTPUT );
+    digitalWrite( ledOutputs[ i ], LOW );
   }
 
   /**
@@ -68,7 +75,7 @@ void loop() {
   
   checkButtons();
   
-  //checkMidi();
+  checkMidi();
   
 }
 
@@ -148,9 +155,12 @@ void sendMidi( int buttonNumber, boolean isOn ) {
   
 }
 
-/*void checkMidi() {
+void checkMidi() {
   // Check if we have any serial data.
   if ( Serial.available() ) {
+    
+    //digitalWrite( ledOutputs[ 0 ], HIGH );
+    
     if ( commandByte == 0 ) {
       // Read first byte (command).
       commandByte = Serial.read();
@@ -160,15 +170,56 @@ void sendMidi( int buttonNumber, boolean isOn ) {
   if ( Serial.available() ) {
     // Just listen for note on and off.
     if ( commandByte == controlChange ) {
-      byte values[ 2 ];
+      
+      //digitalWrite( ledOutputs[ 1 ], HIGH );
+      
+      if ( midiParameters[ 0 ] == -1 ) {
+        midiParameters[ 0 ] = Serial.read();
+        
+        //digitalWrite( ledOutputs[ 2 ], HIGH );
+        
+      } else {
+        midiParameters[ 1 ] = Serial.read();
+        
+        //digitalWrite( ledOutputs[ 3 ], HIGH );
+        
+      }
+      
+      if ( ( midiParameters[ 0 ] != -1 ) && ( midiParameters[ 1 ] != -1 ) ) {
+        // A complete message has been received.
+        
+        //digitalWrite( ledOutputs[ 4 ], HIGH );
+        
+        int myPin = ledOutputs[ getLedIndex( midiParameters[ 0 ] ) ];
+        
+        /**** HERE IS TROUBLE!!! ****
+        ** I need to use the LCD and a prototype to log what's
+         * actually stored in midiParameters[ 0 ]
+        **/     
+        if ( midiParameters[ 1 ] > 63 ) { // HIGH "velocity"
+          digitalWrite( myPin, HIGH );
+        } else {
+          digitalWrite( myPin, LOW );
+        }
+        
+        // Reset
+        commandByte = 0;
+        midiParameters[ 0 ] = -1;
+        midiParameters[ 1 ] = -1;
+      }
+      
+      /*byte values[ 2 ];
       getBytes( 2, values );        
       
       changeIndicatorLed( getLed( values[ 0 ] ), values[ 1 ] );
-      commandByte = 0;
+      commandByte = 0;*/
       
+    } else {
+      commandByte = 0;
     }
   }
-}*§/
+}
+
 
 /*void getBytes( int expectedBytes, byte savedBytes[] ) {
   int receivedBytes = 0;
@@ -183,18 +234,30 @@ void sendMidi( int buttonNumber, boolean isOn ) {
 }*/
 
 
-/*int getLed( byte val ) {
+int getLedIndex( byte val ) {
   switch ( val ) {
     case 25:
-      return led1;
+      return 0;
       break;
     case 26:
-      return led2;
+      return 1;
+      break;
+    case 27:
+      return 2;
+      break;
+    case 28:
+      return 3;
+      break;
+    case 29:
+      return 4;
+      break;
+    case 30:
+      return 5;
       break;
     default:
-      return 0;
+      digitalWrite( ledOutputs[ 5 ], HIGH );
   }
-}*/
+}
 /*
 void changeIndicatorLed( int led, byte val ) {
   if ( led ) {
