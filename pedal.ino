@@ -50,20 +50,6 @@ void setup() {
     pinMode( ledOutputs[ i ], OUTPUT );
     digitalWrite( ledOutputs[ i ], LOW );
   }
-
-  /**
-   *  Code for LCD Debugger
-   **/
- /* lcd.begin( 16, 2 );
-  lcd.backlight();
-  lcd.clear();
-  lcd.setCursor( 0, 0 );
-  lcd.print( "Startar..." );
-  lcd.blink();
-  /**
-   *  End of code for LCD Debugger
-   **/
-
 }
 
 void loop() {
@@ -99,9 +85,6 @@ void checkButtons() {
           lastAction = millis();
         
           digitalButtonsIsDepressed[ i ] = true;
-        
-         /* lcd.clear();
-          lcd.print( i );*/
           
           if ( debugMode ) {
             Serial.print( i );
@@ -110,11 +93,6 @@ void checkButtons() {
             sendMidi( i, true );
           }
         }
-
-
-
-
-
       }
     } else {
       
@@ -126,8 +104,6 @@ void checkButtons() {
       
           digitalButtonsIsDepressed[ i ] = false;
         
-          /*  lcd.clear(); */
-          
           if ( debugMode ) {
             Serial.print( i );
             Serial.println( " was just released.");
@@ -192,20 +168,6 @@ void checkMidi() {
   }
 
 }
-
-
-/*void getBytes( int expectedBytes, byte savedBytes[] ) {
-  int receivedBytes = 0;
-
-  do {
-    if ( Serial.available() ) {
-      savedBytes[ receivedBytes ] = Serial.read();
-      receivedBytes++;
-    }
-  } 
-  while( receivedBytes < expectedBytes );
-}*/
-
 
 int getLedIndex( byte val ) {
   switch ( val ) {
