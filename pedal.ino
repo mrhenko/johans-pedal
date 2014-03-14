@@ -17,7 +17,7 @@ bool strComplete = false;
 
 boolean debugMode = false;
 
-int ledOutputs[6] = { 6, 7, 8, 9, 10, 11 };
+int ledOutputs[7] = { 6, 6, 7, 8, 9, 10, 11 };
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
 boolean sustainPedalIsDepressed = false;
@@ -27,8 +27,7 @@ byte midiMessageForControlChange = 176;
 byte midiChannel = 9;
 byte controlChange = 0;
 
-byte commandByte = 0;
-byte midiParameters[2] = { -1, -1 };
+int midiBytes[3] = { 0, -1, -1 };
 
 unsigned long lastAction = 0;
 int holdFor = 150; // ms from one command to the next
@@ -47,7 +46,7 @@ void setup() {
     pinMode( digitalButtons[ i ], INPUT );
   }
   
-  for ( int i = 0; i < 7; i++ ) {
+  for ( int i = 1; i < 8; i++ ) {
     pinMode( ledOutputs[ i ], OUTPUT );
     digitalWrite( ledOutputs[ i ], LOW );
   }
@@ -156,68 +155,42 @@ void sendMidi( int buttonNumber, boolean isOn ) {
 }
 
 void checkMidi() {
-  // Check if we have any serial data.
-  if ( Serial.available() ) {
+  // Check to see if we have collected a full MIDI Message
+  if ( ( midiBytes[ 0 ] != 0 ) && ( midiBytes[ 1 ] != -1 ) && ( midiBytes[ 2 ] != -1 ) ) {
     
-    //digitalWrite( ledOutputs[ 0 ], HIGH );
+    int myLed;
     
-    if ( commandByte == 0 ) {
-      // Read first byte (command).
-      commandByte = Serial.read();
+    if ( myLed = getLedIndex( midiBytes[ 1 ] ) ) { // If the CC number matches a LED
+      if ( midiBytes[ 2 ] > 63 ) { // A HIGH value
+        digitalWrite( ledOutputs[ myLed ], HIGH );
+      } else {
+        digitalWrite( ledOutputs[ myLed ], LOW );
+      }
+    }
+    
+    midiBytes[ 1 ] = -1;
+    midiBytes[ 2 ] = -1;
+  }
+  
+  if ( Serial.available() ) { // Serial data exists
+    
+    byte serialByte = Serial.read();
+    
+    if ( serialByte > 127 ) { // Status byte
+      midiBytes[ 0 ] = serialByte;
+    } else {
+      // Make sure a status byte is present
+      if ( midiBytes[ 0 ] != 0 ) {
+        // Is the first parameter set?
+        if ( midiBytes[ 1 ] != -1 ) { // Set the second parameter
+          midiBytes[ 2 ] = serialByte;
+        } else { // Set as the first parameter
+          midiBytes[ 1 ] = serialByte;
+        }
+      }
     }
   }
 
-  if ( Serial.available() ) {
-    // Just listen for note on and off.
-    if ( commandByte == controlChange ) {
-      
-      //digitalWrite( ledOutputs[ 1 ], HIGH );
-      
-      if ( midiParameters[ 0 ] == -1 ) {
-        midiParameters[ 0 ] = Serial.read();
-        
-        //digitalWrite( ledOutputs[ 2 ], HIGH );
-        
-      } else {
-        midiParameters[ 1 ] = Serial.read();
-        
-        //digitalWrite( ledOutputs[ 3 ], HIGH );
-        
-      }
-      
-      if ( ( midiParameters[ 0 ] != -1 ) && ( midiParameters[ 1 ] != -1 ) ) {
-        // A complete message has been received.
-        
-        //digitalWrite( ledOutputs[ 4 ], HIGH );
-        
-        int myPin = ledOutputs[ getLedIndex( midiParameters[ 0 ] ) ];
-        
-        /**** HERE IS TROUBLE!!! ****
-        ** I need to use the LCD and a prototype to log what's
-         * actually stored in midiParameters[ 0 ]
-        **/     
-        if ( midiParameters[ 1 ] > 63 ) { // HIGH "velocity"
-          digitalWrite( myPin, HIGH );
-        } else {
-          digitalWrite( myPin, LOW );
-        }
-        
-        // Reset
-        commandByte = 0;
-        midiParameters[ 0 ] = -1;
-        midiParameters[ 1 ] = -1;
-      }
-      
-      /*byte values[ 2 ];
-      getBytes( 2, values );        
-      
-      changeIndicatorLed( getLed( values[ 0 ] ), values[ 1 ] );
-      commandByte = 0;*/
-      
-    } else {
-      commandByte = 0;
-    }
-  }
 }
 
 
@@ -237,34 +210,24 @@ void checkMidi() {
 int getLedIndex( byte val ) {
   switch ( val ) {
     case 25:
-      return 0;
-      break;
-    case 26:
       return 1;
       break;
-    case 27:
+    case 26:
       return 2;
       break;
-    case 28:
+    case 27:
       return 3;
       break;
-    case 29:
+    case 28:
       return 4;
       break;
-    case 30:
+    case 29:
       return 5;
       break;
+    case 30:
+      return 6;
+      break;
     default:
-      digitalWrite( ledOutputs[ 5 ], HIGH );
+      return 0;
   }
 }
-/*
-void changeIndicatorLed( int led, byte val ) {
-  if ( led ) {
-    if ( val == 0 ) { // For some reason I never end up here.
-      digitalWrite( led, LOW );
-    } else if ( val == 127 ) {
-      digitalWrite( led, HIGH );
-    }
-  }
-}*/
