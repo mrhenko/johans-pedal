@@ -15,7 +15,7 @@ bool strComplete = false;
  *  End of code for LCD Debugger
  **/
 
-boolean debugMode = false;
+boolean debugMode = true;
 
 int ledOutputs[7] = { 6, 6, 7, 8, 9, 10, 11 };
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
@@ -42,7 +42,7 @@ void setup() {
   
   controlChange = midiMessageForControlChange + midiChannel - 1;
   
-  for ( int i = 0; i < 7; i++ ) {
+  for ( int i = 0; i < 8; i++ ) {
     pinMode( digitalButtons[ i ], INPUT );
   }
   
@@ -74,7 +74,7 @@ void loop() {
  * being pressed will get a false.
  **/
 void checkButtons() {
-  for ( int i = 0; i < 7; i++ ) {
+  for ( int i = 0; i < 8; i++ ) {
     
     // Digital
     if ( digitalRead( digitalButtons[ i ] ) == HIGH ) {
