@@ -22,6 +22,8 @@ int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain peda
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
 boolean sustainPedalIsDepressed = false;
 
+// A4 is the input for the expression pedal
+
 byte controlChangeNumber[7] = { 25, 26, 27, 28, 29, 30, 64 };
 byte midiMessageForControlChange = 176;
 byte midiChannel = 9;
@@ -60,9 +62,21 @@ void loop() {
   
   checkButtons();
   
+  checkExpressionPedal();
+  
   checkMidi();
   
 }
+
+/**
+ * This function will meassure the input on the Analog pin
+ * that the expression pedal is connected to.
+ **/
+void checkExpressionPedal() {
+  int expressionValue = analogRead( A4 );
+  Serial.println ( expressionValue );
+}
+
 
 /**
  * This functions loops over the arrays containing the
