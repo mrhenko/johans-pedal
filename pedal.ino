@@ -34,6 +34,11 @@ int midiBytes[3] = { 0, -1, -1 };
 unsigned long lastAction = 0;
 int holdFor = 150; // ms from one command to the next
 
+// Calibration for the expression pedal
+int expressionFloor = 490;
+int expressionCeiling = 1023;
+int lastMidiValue = 0;
+
 void setup() {
   
   if ( debugMode ) {
@@ -74,7 +79,28 @@ void loop() {
  **/
 void checkExpressionPedal() {
   int expressionValue = analogRead( A4 );
-  Serial.println ( expressionValue );
+  
+  int midiValue = map( expressionValue, expressionFloor, expressionCeiling, 0, 128 );
+  
+  if ( midiValue > 127 ) {
+    midiValue = 127;
+  }
+    
+  if ( midiValue < 0 ) {
+    midiValue = 0;
+  }
+  
+  if ( midiValue != lastMidiValue ) {
+    lastMidiValue = midiValue;
+    
+    if ( debugMode ) {
+      Serial.println ( midiValue );
+    } else {
+      sendExpression( midiValue );
+    }
+    
+  }
+  
 }
 
 
@@ -88,7 +114,7 @@ void checkExpressionPedal() {
  * being pressed will get a false.
  **/
 void checkButtons() {
-  for ( int i = 0; i < 8; i++ ) {
+  for ( int i = 0; i < 7; i++ ) {
     
     // Digital
     if ( digitalRead( digitalButtons[ i ] ) == HIGH ) {
@@ -141,6 +167,14 @@ void sendMidi( int buttonNumber, boolean isOn ) {
   } else {
     Serial.write( 0 );
   }
+  
+}
+
+void sendExpression( int midiValue ) {
+  
+  Serial.write( controlChange );
+  Serial.write( controlChangeNumber[ 31 ] );
+  Serial.write( midiValue );
   
 }
 
