@@ -15,7 +15,7 @@ bool strComplete = false;
  *  End of code for LCD Debugger
  **/
 
-boolean debugMode = true;
+boolean debugMode = false;
 
 int ledOutputs[7] = { 6, 6, 7, 8, 9, 10, 11 };
 int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
@@ -46,8 +46,6 @@ void setup() {
   } else {
     Serial.begin( 31250 );
   }
-  
-  controlChange = midiMessageForControlChange + midiChannel - 1;
   
   for ( int i = 0; i < 8; i++ ) {
     pinMode( digitalButtons[ i ], INPUT );
@@ -98,7 +96,7 @@ void checkExpressionPedal() {
     if ( debugMode ) {
       Serial.println ( midiValue );
     } else {
-      sendExpression( midiValue );
+      sendExpression( midiValue, 1 );
     }
     
   }
@@ -116,7 +114,14 @@ void checkExpressionPedal() {
  * being pressed will get a false.
  **/
 void checkButtons() {
+  int currentMidiChannel = 1;
   for ( int i = 0; i < 7; i++ ) {
+    
+    if ( i == 6 ) { // Sustain pedal
+      currentMidiChannel = 1;
+    } else { // Standard
+      currentMidiChannel = midiChannel;
+    }
     
     // Digital
     if ( digitalRead( digitalButtons[ i ] ) == HIGH ) {
@@ -132,7 +137,7 @@ void checkButtons() {
             Serial.print( i );
             Serial.println( " is currently being pressed.");
           } else {
-            sendMidi( i, true );
+            sendMidi( i, true, currentMidiChannel );
           }
         }
       }
@@ -150,7 +155,7 @@ void checkButtons() {
             Serial.print( i );
             Serial.println( " was just released.");
           } else {
-            sendMidi( i, false );
+            sendMidi( i, false, currentMidiChannel );
           }
           
         }
@@ -159,7 +164,9 @@ void checkButtons() {
   }
 }
 
-void sendMidi( int buttonNumber, boolean isOn ) {
+void sendMidi( int buttonNumber, boolean isOn, int channel ) {
+  
+  controlChange = midiMessageForControlChange + channel - 1;
   
   Serial.write( controlChange );
   Serial.write( controlChangeNumber[ buttonNumber ] );
@@ -172,7 +179,9 @@ void sendMidi( int buttonNumber, boolean isOn ) {
   
 }
 
-void sendExpression( int midiValue ) {
+void sendExpression( int midiValue, int channel ) {
+  
+  controlChange = midiMessageForControlChange + channel - 1;
   
   Serial.write( controlChange );
   Serial.write( controlChangeNumber[ 31 ] );
