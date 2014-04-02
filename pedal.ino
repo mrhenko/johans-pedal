@@ -35,8 +35,8 @@ unsigned long lastAction = 0;
 int holdFor = 150; // ms from one command to the next
 
 // Calibration for the expression pedal
-int expressionFloor = 490;
-int expressionCeiling = 1023;
+int expressionFloor = 59;
+int expressionCeiling = 1020;
 int lastMidiValue = 0;
 
 void setup() {
@@ -79,6 +79,8 @@ void loop() {
  **/
 void checkExpressionPedal() {
   int expressionValue = analogRead( A4 );
+  
+  //Serial.println( expressionValue );
   
   int midiValue = map( expressionValue, expressionFloor, expressionCeiling, 0, 128 );
   
