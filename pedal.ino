@@ -18,7 +18,9 @@ bool strComplete = false;
 boolean debugMode = false;
 
 int ledOutputs[7] = { 6, 6, 7, 8, 9, 10, 11 };
-int digitalButtons[7] = { 2, 3, 4, 13, 12, A5, 5 }; // Button 1-6 + Sustain pedal
+int digitalButtons[7] =           { 2,     3,     4,     13,    12,    A5,    5 }; // Button 1-6 + Sustain pedal
+boolean specialCaseButtons[7] =   { false, false, true,  true,  false, false, false }; // Button 3 & 4
+boolean specialCaseIsPressed[7] = { false, false, false, false, false, false, false }; // Button 3 & 4
 boolean digitalButtonsIsDepressed[7] = { false, false, false, false, false, false, false };
 boolean sustainPedalIsDepressed = false;
 
@@ -137,7 +139,17 @@ void checkButtons() {
             Serial.print( i );
             Serial.println( " is currently being pressed.");
           } else {
-            sendMidi( i, true, currentMidiChannel );
+            if ( specialCaseButtons[ i ] ) { // Special for special cases
+              if ( specialCaseIsPressed[ i ] ) { // If last value was 127
+                sendMidi( i, false, currentMidiChannel );
+                specialCaseIsPressed[ i ] = false;
+              } else {
+                sendMidi( i, true, currentMidiChannel );
+                specialCaseIsPressed[ i ] = true;
+              }
+            } else {
+              sendMidi( i, true, currentMidiChannel );
+            }
           }
         }
       }
@@ -155,7 +167,9 @@ void checkButtons() {
             Serial.print( i );
             Serial.println( " was just released.");
           } else {
-            sendMidi( i, false, currentMidiChannel );
+            if ( specialCaseButtons[ i ] == false ) { // Do not send 0 values on button off for special case.
+              sendMidi( i, false, currentMidiChannel );
+            }
           }
           
         }
